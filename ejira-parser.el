@@ -98,7 +98,7 @@
                        jiralib2-url username name))))
 
         ;; Link
-        ("\\[\\(?:\\(.*\\)|\\)?\\([^\\]*\\)\\]"
+        ("\\[\\(?:\\(.*?\\)\\)?|\\([^\\]*?\\)\\]"
          . (lambda ()
              (let ((url (format "[%s]" (match-string 2)))
                    (placeholder (if (match-string 1)
@@ -166,6 +166,9 @@
         ("\\([^a-z]\\|^\\)_\\(.*?\\)_\\([^a-z]\\|$\\)"
          . (lambda () (concat (match-string 1) "/" (match-string 2) "/" (match-string 3))))
 
+        ;; test
+        ("Soenke" . (lambda () concat ("hahaha" (match-string 1) "hahaha")))
+
         )
       "Regular expression - replacement pairs used in parsing JIRA markup.")
 
@@ -199,15 +202,16 @@ headings to the right by that amount."
         (with-temp-buffer
           (let ((replacements ())
                 (jira-to-org--convert-level (or level 0)))
-
+            
             ;; Literal backslashes need to be handled separately, they mess up
             ;; other regexp patching. They get replaced with the identifier
             ;; first, and restored last.
-            (insert (decode-coding-string (replace-regexp-in-string
-                                           "\\\\" backslash-replacement
-                                           (replace-regexp-in-string
-                                            "%" percent-replacement s))
-                                          'utf-8))
+            (insert (decode-coding-string
+                     (s-replace-all
+                      `(("\\\\" . ,backslash-replacement)
+                        ("%"    . ,percent-replacement))
+                      s)
+                     'utf-8))
             (cl-loop
              for (pattern . replacement) in ejira-parser-patterns do
              (goto-char (point-min))
@@ -215,11 +219,11 @@ headings to the right by that amount."
                (let ((identifier (random-identifier 32))
                      (rep (funcall replacement)))
                  (replace-match identifier)
-
+                 
                  ;; Prepend to the list so that the replacements will be applied in
                  ;; reverse order.
                  (add-to-list 'replacements `(,identifier . ,rep)))))
-
+            
             (mapc
              (lambda (r)
                (goto-char (point-min))
@@ -238,10 +242,13 @@ headings to the right by that amount."
                        nil)
                       (t (setq counters (make-list 6 1))))
                 (forward-line 1)))
-            (delete-trailing-whitespace))
-          
-          (s-replace-all ((backslash-replacement . "\\\\") (percent-replacement . "%")) (buffer-string))))
-      (error s)))
+            (delete-trailing-whitespace)
+            
+            (s-replace-all
+             `((,backslash-replacement . "\\\\")
+               (,percent-replacement   . "%"))
+             (buffer-string)))))
+        (error "aaaa")))
 
 (provide 'ejira-parser)
 ;;; ejira-parser.el ends here

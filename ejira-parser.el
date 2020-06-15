@@ -166,9 +166,6 @@
         ("\\([^a-z]\\|^\\)_\\(.*?\\)_\\([^a-z]\\|$\\)"
          . (lambda () (concat (match-string 1) "/" (match-string 2) "/" (match-string 3))))
 
-        ;; test
-        ("Soenke" . (lambda () concat ("hahaha" (match-string 1) "hahaha")))
-
         )
       "Regular expression - replacement pairs used in parsing JIRA markup.")
 
@@ -208,7 +205,7 @@ headings to the right by that amount."
             ;; first, and restored last.
             (insert (decode-coding-string
                      (s-replace-all
-                      `(("\\\\" . ,backslash-replacement)
+                      `(("\\" . ,backslash-replacement)
                         ("%"    . ,percent-replacement))
                       s)
                      'utf-8))
@@ -242,13 +239,13 @@ headings to the right by that amount."
                        nil)
                       (t (setq counters (make-list 6 1))))
                 (forward-line 1)))
-            (delete-trailing-whitespace)
+            (delete-trailing-whitespace))
             
-            (s-replace-all
-             `((,backslash-replacement . "\\\\")
-               (,percent-replacement   . "%"))
-             (buffer-string)))))
-        (error s)))
+          (s-replace-all
+           `((,backslash-replacement . "\\")
+             (,percent-replacement   . "%"))
+           (buffer-string))))
+    (error s)))
 
 (provide 'ejira-parser)
 ;;; ejira-parser.el ends here

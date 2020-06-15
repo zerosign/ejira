@@ -248,7 +248,7 @@ headings to the right by that amount."
              `((,backslash-replacement . "\\\\")
                (,percent-replacement   . "%"))
              (buffer-string)))))
-        (error "aaaa")))
+        (error s)))
 
 (provide 'ejira-parser)
 ;;; ejira-parser.el ends here

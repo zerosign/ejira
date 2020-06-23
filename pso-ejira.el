@@ -28,7 +28,7 @@
 (require 'dash-functional)
 (require 'ejira-core)
 
-
+;;;###autoload
 (defun ejira-create-item-under-point ()
   "Create issue based on complete ejira-issue sans ID."
   (interactive)
@@ -61,6 +61,26 @@
                            `(assignee . ,assignee))))))
     (org-entry-put nil "ID" (cdr (assoc 'key response)))
     (org-entry-put nil "URL" (cdr (assoc 'self response)))))
+
+;;;###autoload
+(defun ejira-if-plan-issue ()
+  (interactive)
+  (let* ((item (ejira-get-id-under-point))
+         (startdate (read-string "Startdatum: " (org-read-date nil nil "++mon")))
+         (properties (save-excursion
+                       (goto-char (nth 2 item))
+                       (org-entry-properties)))
+         (effort (read-string "Effort: "(or (cdr (assoc "EFFORT" properties)) "0h"))))
+    (jiralib2-if-plan-issue (nth 1 item) startdate effort)
+    (ejira--update-task (nth 1 item))))
+
+;;;###autoload
+(defun ejira-if-unplan-issue ()
+  (interactive)
+  (let ((item (ejira-get-id-under-point)))
+    (jiralib2-if-unplan-issue (nth 1 item))
+    (ejira--update-task (nth 1 item))))
+
 
 
 (provide 'pso-ejira)

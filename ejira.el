@@ -89,41 +89,6 @@ description, and for the comment the body."
              (ejira--get-heading-body
               (ejira--find-task-subheading id ejira-description-heading-name))))))))
 
-(defun ejira-create-item-under-point ()
-  "Create issue based on complete ejira-issue sans ID."
-  (interactive)
-  (let* ((item (ejira-get-id-under-point))
-         (assignee "Unassigned")
-         (summary (ejira--with-point-on (nth 1 item) (ejira--strip-properties (org-get-heading t t t t))))
-         (properties (save-excursion
-                       (goto-char (nth 2 item))
-                       (org-entry-properties)))
-         (issuetype (cdr (assoc "ISSUETYPE" properties)))
-         (type (cdr (assoc "TYPE" properties)))
-         (project (cdr (assoc "CATEGORY" properties)))
-         (description (ejira-parser-org-to-jira
-                       (ejira--get-heading-body
-                        (ejira--find-task-subheading (nth 1 item) ejira-description-heading-name))))
-         (response (cond ((string= type "ejira-epic")
-                          (jiralib2-create-issue
-                           project
-                           issuetype
-                           summary
-                           description
-                           `(assignee . ,assignee)
-                           `(customfield_10011 . ,summary))) ; Epic Name
-                         (t
-                          (jiralib2-create-issue
-                           project
-                           issuetype
-                           summary
-                           description
-                           `(assignee . ,assignee))))))
-    (org-entry-put nil "ID" (cdr (assoc 'key response)))
-    (org-entry-put nil "URL" (cdr (assoc 'self response)))))
-
-
-
 (defun ejira--heading-to-item (heading project-id type exclude-subheadings &rest args)
   "Create an item from HEADING of TYPE into PROJECT-ID with parameters ARGS."
   (let* ((summary (ejira--strip-properties (org-get-heading t t t t)))
@@ -191,7 +156,7 @@ With prefix argument FOCUS, focus the issue after creating."
          (key (when project-id (ejira--heading-to-item heading project-id
                                                        ejira-subtask-type-name
                                                        nil
-                                                       (parent . ((key . ,story)))))))
+                                                       `(parent . ((key . ,story)))))))
     (when (and key focus)
       (ejira-focus-on-issue key))))
 
@@ -296,24 +261,6 @@ With prefix-argument TO-ME assign to me."
   "Progress the issue under point with a selected action."
   (interactive)
   (ejira--progress-item (ejira-issue-id-under-point)))
-
-;;;###autoload
-(defun ejira-if-plan-issue ()
-  (interactive)
-  (let* ((item (ejira-get-id-under-point))
-         (startdate (read-string "Startdatum: " (org-read-date nil nil "++mon")))
-         (properties (save-excursion
-                       (goto-char (nth 2 item))
-                       (org-entry-properties)))
-         (effort (read-string "Effort: "(or (cdr (assoc "EFFORT" properties)) "0h"))))
-    (jiralib2-if-plan-issue (nth 1 item) startdate effort)
-    (ejira--update-task (nth 1 item))))
-
-(defun ejira-if-unplan-issue ()
-  (interactive)
-  (let ((item (ejira-get-id-under-point)))
-    (jiralib2-if-unplan-issue (nth 1 item))
-    (ejira--update-task (nth 1 item))))
 
 ;;;###autoload
 (defun ejira-set-issuetype ()

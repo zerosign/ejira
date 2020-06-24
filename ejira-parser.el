@@ -89,13 +89,13 @@
                  (set-match-data md)))))
 
         ;; Link to a user
-        ("\\[~\\([a-zA-Z_.]*\\)\\]"
+        ("\\[~accountid:\\([-a-z0-9:\\)\\]"
          . (lambda ()
-             (let* ((username (match-string 1))
-                    (name (alist-get username (ejira--get-users) nil nil 'equal)))
+             (let* ((account-id (match-string 1))
+                    (account-id (match-string 2)))
 
-               (format "[[%s/secure/ViewProfile.jspa?name=%s][%s]]"
-                       jiralib2-url username name))))
+               (format "[[%s][%s]]"
+                       account-id user-fullname))))
 
         ;; Link
         ("\\[\\(?:\\(.*?\\)\\)?|\\([^\\]*?\\)\\]"

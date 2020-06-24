@@ -89,12 +89,12 @@
                  (set-match-data md)))))
 
         ;; Link to a user
-        ("\\[~accountid:\\([-a-z0-9:\\)\\]"
+        ("\\[~accountid:\\([a-z0-9:-]*\\)\\]"
          . (lambda ()
              (let* ((account-id (match-string 1))
-                    (account-id (match-string 2)))
-
-               (format "[[%s][%s]]"
+                    (jira-users (ejira--get-users))
+                    (user-fullname (cdr (assoc account-id jira-users))))
+               (format "[[~accountid:%s][%s]]"
                        account-id user-fullname))))
 
         ;; Link

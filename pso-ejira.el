@@ -70,7 +70,13 @@
          (properties (save-excursion
                        (goto-char (nth 2 item))
                        (org-entry-properties)))
-         (effort (read-string "Effort: "(or (cdr (assoc "EFFORT" properties)) "0h"))))
+         (effort (read-string "Effort: "
+                              (cond ((cdr (assoc "EFFORT" properties))
+                                     (multiple-value-bind (hours minutes) (split-string (cdr (assoc "EFFORT" properties)) ":")
+                                       (if (string= minutes "00")
+                                           (concat hours "h")
+                                         (concat hours "h" minutes "m"))))
+                                     (t "0h")))))
     (jiralib2-if-plan-issue (nth 1 item) startdate effort)
     (ejira--update-task (nth 1 item))))
 

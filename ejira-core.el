@@ -31,7 +31,6 @@
 (require 'org)
 (require 'f)
 (require 'dash)
-(require 'dash-functional)
 (require 'org-id)
 (require 'org-capture)
 
@@ -40,7 +39,6 @@
 
 (require 'ejira-parser)
 
-
 
 (defgroup ejira nil
   "JIRA synchronization for Emacs."
@@ -309,7 +307,6 @@ If the issue heading does not exist, fallback to full update."
 
       ;; Create a new heading if needed
       (unless (ejira--find-heading key)
-        (when (fboundp 'helm-ejira-invalidate-cache) (helm-ejira-invalidate-cache))
         (ejira--new-heading (marker-buffer (ejira--find-heading project))
                             (or parent project)
                             key))

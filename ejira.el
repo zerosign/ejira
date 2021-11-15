@@ -26,10 +26,9 @@
 ;;; Code:
 
 (require 'org)
-(require 'dash-functional)
+(require 'dash)
 (require 'ejira-core)
 
-
 
 (defvar ejira-push-deadline-changes t
   "Sync deadlines to server when updated with `ejira-set-deadline'.")
